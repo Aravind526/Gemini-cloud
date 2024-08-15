@@ -26,7 +26,7 @@ node{
         checkout scm
     }
     stage('Build image'){
-        app = docker.build(Aravind/project")
+        app = docker.build("aravind5260/aravind_repository_1")
     }
     stage('Test image'){
         app.inside{
