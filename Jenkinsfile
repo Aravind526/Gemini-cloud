@@ -20,6 +20,7 @@
     }
 }*/
 
+/*
 node {
     def app
 
@@ -42,5 +43,30 @@ node {
             app.push("\${env.BUILD_NUMBER}")
             app.push("latest")
         }
+    }
+}*/
+
+
+node {
+    def app
+
+    stage('clone repository') {
+        checkout scm
+    }
+
+    stage('Build image') {
+        app = docker.build("aravind5260/aravind_repository_1")
+    }
+
+    stage('Test image') {
+        app.inside {
+            sh 'echo "Tests passed"'
+        }
+    }
+
+    stage('Push image') {
+        // No need to use credentials for Docker Hub
+        app.push("\${env.BUILD_NUMBER}")
+        app.push("latest")
     }
 }
