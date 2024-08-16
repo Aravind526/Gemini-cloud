@@ -47,26 +47,53 @@ node {
 }*/
 
 
-node {
-    def app
+pipeline {
+    agent any
 
-    stage('clone repository') {
-        checkout scm
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
     }
 
-    stage('Build image') {
-        app = docker.build("aravind5260/aravind_repository_1")
-    }
+    stages {
+        stage('Clone repository') {
+            steps {
+                checkout scm
+            }
+        }
 
-    stage('Test image') {
-        app.inside {
-            sh 'echo "Tests passed"'
+        stage('Build image') {
+            steps {
+                script {
+                    app = docker.build("aravind5260/aravind_repository_1")
+                }
+            }
+        }
+
+        stage('Test image') {
+            steps {
+                script {
+                    app.inside {
+                        sh 'echo "Tests passed"'
+                    }
+                }
+            }
+        }
+
+        stage('Push image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKERHUB_CREDENTIALS') {
+                        app.push("${env.BUILD_NUMBER}")
+                        app.push("latest")
+                    }
+                }
+            }
         }
     }
 
-    stage('Push image') {
-        // No need to use credentials for Docker Hub
-        app.push("\${env.BUILD_NUMBER}")
-        app.push("latest")
+    post {
+        always {
+            cleanWs()
+        }
     }
 }
